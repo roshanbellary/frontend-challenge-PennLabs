@@ -2,6 +2,7 @@ import courses from '../data/courses.json'
 import * as React from 'react';
 import ReactCardFlip from 'react-card-flip';
 import {Container, Row, Col, Card, Button} from 'react-bootstrap';
+import { CourseRep } from '../App';
 interface CourseValues {//Creating an interface to hold the course parameters
   dept:string;
   title:string;
@@ -9,9 +10,12 @@ interface CourseValues {//Creating an interface to hold the course parameters
   preReqs?:string[];
   crossListed?:string[];
   description: string;
+  addCartList : (dept:string, title:string, num:number) => number;
+  checkCartList : (title:string) => boolean;
 };
 function Course(props:CourseValues){//Defining a course object that appears in the form of a card
   let [flipped, setFlipped] = React.useState(false);
+  let [addPossible, setAddPossible] = React.useState(true);
   let prereqs = "Prerequisites: ";
   if (props.preReqs!=undefined){
     for (let i=0;i<props.preReqs.length-1;i++){
@@ -26,7 +30,11 @@ function Course(props:CourseValues){//Defining a course object that appears in t
     }
     crosslist+=props.crossListed[props.crossListed.length-1];
   }else crosslist="No Cross Listings";
-
+  function onClick(){
+    props.addCartList(props.dept,props.title,props.number);
+    setAddPossible(false);
+  }
+  if (!props.checkCartList(props.title) && addPossible==false) setAddPossible(true);
   return(
     <ReactCardFlip isFlipped={flipped} flipDirection="horizontal">
         <Card id="card-team" className="display-flex" style={{height:"320px", overflow:"auto"}}  >
@@ -54,9 +62,14 @@ function Course(props:CourseValues){//Defining a course object that appears in t
           <Card.Footer style={{textAlign:"center"}}>
             <Col style={{textAlign:"center", margin:"auto"}}>
               <Row sm={1}>
-                <Button variant="primary" style={{margin:"auto"}}>
-                  Add To Cart
-                </Button>
+                {addPossible?
+                  <Button variant="primary" style={{margin:"auto"}} onClick={onClick}>
+                    Add To Cart
+                  </Button>:
+                  <Button variant="grey" style={{margin:"auto"}}>
+                    Added To Cart
+                  </Button>
+                }
               </Row>
             </Col>
           </Card.Footer>
@@ -76,6 +89,8 @@ function Course(props:CourseValues){//Defining a course object that appears in t
 }
 interface CoursesProps{
   query: string;
+  addCartList : (dept:string, title:string, num:number) => number;
+  checkCartList : (title:string) => boolean;
 };
 function Courses (props:CoursesProps) {
   const [more,setMore] = React.useState(false);
@@ -92,10 +107,12 @@ function Courses (props:CoursesProps) {
   }
   let filteredCourses= filteredData.map((item)=>(
     <Course key={item["dept"]+"-"+item["number"]} dept={item["dept"]} title={item["title"]} number={item["number"]} 
-    preReqs={(typeof(item["prereqs"])=="string")?[item["prereqs"]]:item["prereqs"]} crossListed= {item["cross-listed"]} description={item["description"]}
+    preReqs={(typeof(item["prereqs"])=="string")?[item["prereqs"]]:item["prereqs"]} 
+    crossListed= {item["cross-listed"]} description={item["description"]}
+    addCartList={props.addCartList} checkCartList={props.checkCartList}
     />
   ));
-  let currComp = [];
+  let currComp = [];// Lines 112-140 is me taking the Courses and structuring them into Rows of 3 
   for (let i=0;i<filteredCourses.length;i+=3){
       let mi = i+3-1;
       if (mi>=filteredCourses.length){
