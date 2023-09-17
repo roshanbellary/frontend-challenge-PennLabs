@@ -1,3 +1,5 @@
+import * as React from 'react';
+import {Container, Row, Col, Card, Button} from 'react-bootstrap';
 const Cart = () => (
   <div style={{
     border: '1px solid rgba(0, 0, 0, 0.1)',
@@ -6,7 +8,7 @@ const Cart = () => (
     borderRadius: '4px',
   }}>
     <h4>Course Cart</h4>
-
+    
     <p>Your cart is currently empty!</p>
   </div>
 )
